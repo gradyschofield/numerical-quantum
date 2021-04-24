@@ -3,13 +3,15 @@
 //
 
 #include<iostream>
+#include<sstream>
 #include<vector>
 #include<thread>
 
-#include<SphericalPoint.h>
 #include<Bounds.h>
+#include<CommandLine.h>
 #include<Generator.h>
 #include<PartialWork.h>
+#include<SphericalPoint.h>
 
 using namespace std;
 
@@ -29,8 +31,8 @@ using namespace std;
  */
 
 int main(int argc, char ** argv) {
+    long N = CommandLine::parseNumPoints(argc, argv, 1E6);
     Bounds bounds(0, 2, 0, M_PI, 0, 2 * M_PI);
-    long N = 1E9;
     int numThreads = thread::hardware_concurrency();
     N /= numThreads;
     vector<PartialWork> partialWorkArray(numThreads);

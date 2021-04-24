@@ -5,6 +5,7 @@
 #ifndef ATOM_SPHERICALPOINT_H
 #define ATOM_SPHERICALPOINT_H
 
+#include<cmath>
 
 class SphericalPoint {
     double r, theta, phi;

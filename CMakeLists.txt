@@ -46,8 +46,14 @@ add_executable(twoCircles src/montecarlo/TwoCircles.cpp)
 
 set(MONTE_CARLO_LIB_SRC
         src/montecarlo/SphericalPoint.h
-        src/montecarlo/Bounds.h src/montecarlo/Generator.h src/montecarlo/PartialWork.h)
+        src/montecarlo/Bounds.h
+        src/montecarlo/Generator.h
+        src/montecarlo/PartialWork.h
+        src/montecarlo/CommandLine.h)
 
 add_executable(spheres src/montecarlo/Spheres.cpp)
 
 add_executable(firstIntegral src/montecarlo/FirstIntegral.cpp ${MONTE_CARLO_LIB_SRC})
+if( UNIX AND NOT APPLE)
+        target_link_libraries(firstIntegral pthread)
+endif()
