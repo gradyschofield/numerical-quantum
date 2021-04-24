@@ -9,24 +9,26 @@
 
 using namespace std;
 
+template<typename AccumulatorType>
 class alignas(128) PartialWork {
-    double inVolume = 0;
-    double outVolume = 0;
-    double integral = 0;
+    AccumulatorType inVolume;
+    AccumulatorType outVolume;
+    AccumulatorType integral;
+    double minIntegral = numeric_limits<double>::max();
+    double maxIntegral = -numeric_limits<double>::max();
 public:
-    double addInVolume(double x) {
+    void addInVolume(double x) {
         inVolume += x;
-        return inVolume;
     }
 
-    double addOutVolume(double x) {
+    void addOutVolume(double x) {
         outVolume += x;
-        return outVolume;
     }
 
-    double addIntegral(double x) {
+    void addIntegral(double x) {
         integral += x;
-        return integral;
+        minIntegral = min(minIntegral, x);
+        maxIntegral = max(maxIntegral, x);
     }
 
     double getInVolume() const {
@@ -39,6 +41,14 @@ public:
 
     double getIntegral() const {
         return integral;
+    }
+
+    double getMinIntegral() const {
+        return minIntegral;
+    }
+
+    double getMaxIntegral() const {
+        return maxIntegral;
     }
 
     static PartialWork accumulate(vector<PartialWork> const & v) {

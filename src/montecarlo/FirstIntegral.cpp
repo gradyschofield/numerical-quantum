@@ -7,6 +7,7 @@
 #include<vector>
 #include<thread>
 
+#include<BigSum.h>
 #include<Bounds.h>
 #include<CommandLine.h>
 #include<Generator.h>
@@ -30,17 +31,19 @@ using namespace std;
  * Carlo integration.
  */
 
+typedef BigSum AccumulatorType;
+
 int main(int argc, char ** argv) {
     long N = CommandLine::parseNumPoints(argc, argv, 1E6);
     Bounds bounds(0, 2, 0, M_PI, 0, 2 * M_PI);
     int numThreads = thread::hardware_concurrency();
     N /= numThreads;
-    vector<PartialWork> partialWorkArray(numThreads);
+    vector<PartialWork<AccumulatorType>> partialWorkArray(numThreads);
     vector<thread> threads;
     for(int t = 0; t < numThreads; ++t) {
         threads.emplace_back([&,t]() {
             Generator generator(bounds);
-            PartialWork & partialWork = partialWorkArray[t];
+            PartialWork<AccumulatorType> & partialWork = partialWorkArray[t];
             for (int i = 0; i < N; ++i) {
                 SphericalPoint k = generator.generate();
                 SphericalPoint q = generator.generate();
@@ -57,7 +60,7 @@ int main(int argc, char ** argv) {
     for(thread & t : threads) {
         t.join();
     }
-    PartialWork result = PartialWork::accumulate(partialWorkArray);
+    PartialWork<AccumulatorType> result = PartialWork<AccumulatorType>::accumulate(partialWorkArray);
     double volumeNormalizer = pow(bounds.getVolume(), 2) / (result.getInVolume() + result.getOutVolume());
     cout << "Number of threads used: " << numThreads << "\n";
     cout << "Number of points (millions): " << (numThreads*N)/1E6 << "\n";

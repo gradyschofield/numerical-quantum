@@ -49,9 +49,12 @@ set(MONTE_CARLO_LIB_SRC
         src/montecarlo/Bounds.h
         src/montecarlo/Generator.h
         src/montecarlo/PartialWork.h
-        src/montecarlo/CommandLine.h)
+        src/montecarlo/CommandLine.h
+        src/montecarlo/BigSum.h)
 
 add_executable(spheres src/montecarlo/Spheres.cpp)
+
+add_executable(testBigSum src/montecarlo/TestBigSum.cpp)
 
 add_executable(firstIntegral src/montecarlo/FirstIntegral.cpp ${MONTE_CARLO_LIB_SRC})
 if( UNIX AND NOT APPLE)
