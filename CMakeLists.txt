@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(
         src/
         src/stdeig
+        src/montecarlo
         )
 
 set(PHYSICS_SRC
@@ -40,3 +41,13 @@ target_link_libraries(singleparticle_fd blas lapacke)
 
 add_executable(twoparticle_fd src/manybody1D/twoparticle/TwoParticleFiniteDifference.cpp ${PHYSICS_SRC})
 target_link_libraries(twoparticle_fd blas lapacke)
+
+add_executable(twoCircles src/montecarlo/TwoCircles.cpp)
+
+set(MONTE_CARLO_LIB_SRC
+        src/montecarlo/SphericalPoint.h
+        src/montecarlo/Bounds.h src/montecarlo/Generator.h src/montecarlo/PartialWork.h)
+
+add_executable(spheres src/montecarlo/Spheres.cpp)
+
+add_executable(firstIntegral src/montecarlo/FirstIntegral.cpp ${MONTE_CARLO_LIB_SRC})
