@@ -17,8 +17,49 @@ class BigSum {
     vector<double> negativeAccumulators;
     vector<double> orderLimits;
     int orders;
+    int binOffset;
+
+    void carryAccumulators(int startBin, bool positive) {
+        if(positive) {
+            for (int bin = startBin; bin < orders - 1; ++bin) {
+                if (positiveAccumulators[bin] > orderLimits[bin]) {
+                    positiveAccumulators[bin + 1] += positiveAccumulators[bin];
+                    positiveAccumulators[bin] = 0;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            for (int bin = startBin; bin < orders - 1; ++bin) {
+                if (negativeAccumulators[bin] < -orderLimits[bin]) {
+                    negativeAccumulators[bin + 1] += negativeAccumulators[bin];
+                    negativeAccumulators[bin] = 0;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
 
 public:
+
+    BigSum()
+            : BigSum(25, 1E-5)
+    {
+    }
+
+    BigSum(int orders, double minBin)
+            : positiveAccumulators(orders),
+              negativeAccumulators(orders),
+              orderLimits(orders),
+              orders(orders)
+    {
+        binOffset = round(log10(minBin));
+        double lowestLimit = pow(10, binOffset);
+        for(int i = 0; i < orders; ++i) {
+            orderLimits[i] = lowestLimit * pow(10,i);
+        }
+    }
 
     operator double() const {
         double positiveSum = 0;
@@ -52,25 +93,8 @@ public:
         cout << "sum: " << setprecision(16) << sum << setprecision(5) << "\n";
     }
 
-    BigSum()
-        : BigSum(25, 1E-5)
-    {
-    }
-
-    BigSum(int orders, double minBin)
-        : positiveAccumulators(orders),
-          negativeAccumulators(orders),
-          orderLimits(orders),
-          orders(orders)
-    {
-        double lowestLimit = pow(10, round(log10(minBin)));
-        for(int i = 0; i < orders; ++i) {
-            orderLimits[i] = lowestLimit * pow(10,i);
-        }
-    }
-
     void add(double x) {
-        int bin = min(orders-1, (int)max(0.0, round(log10(fabs(x)))));
+        int bin = min(orders-1, (int)max(0.0, round(log10(fabs(x))) - binOffset));
         if(x > 0) {
             positiveAccumulators[bin] += x;
             if (positiveAccumulators[bin] > orderLimits[bin]) {
@@ -88,27 +112,10 @@ public:
         add(x);
     }
 
-    void carryAccumulators(int startBin, bool positive) {
-        if(positive) {
-            for (int bin = startBin; bin < orders - 1; ++bin) {
-                if (positiveAccumulators[bin] > orderLimits[bin]) {
-                    positiveAccumulators[bin + 1] += positiveAccumulators[bin];
-                    positiveAccumulators[bin] = 0;
-                } else {
-                    break;
-                }
-            }
-        } else {
-            for (int bin = startBin; bin < orders - 1; ++bin) {
-                if (negativeAccumulators[bin] < -orderLimits[bin]) {
-                    negativeAccumulators[bin + 1] += negativeAccumulators[bin];
-                    negativeAccumulators[bin] = 0;
-                } else {
-                    break;
-                }
-            }
-        }
+    void operator-=(double x) {
+        add(-x);
     }
+
 };
 
 #endif //ATOM_BIGSUM_H
