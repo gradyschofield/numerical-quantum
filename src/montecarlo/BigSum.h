@@ -19,7 +19,7 @@ using namespace std;
  *
  * This class represents a sum by keeping partial results in several bins, each of which stores a
  * number that doesn't exceed a certain order of magnitude. When a number is added to the sum,
- * it is accumulated into the appropriate bin based on their size.  When the value in a bin goes
+ * it is accumulated into the appropriate bin based on its size.  When the value in a bin goes
  * over the order of magnitude limit for that bin, the bin value is added to the bin for next largest
  * order of magnitude and the original bin is set to zero.  This "carry" operation can cause a cascade
  * of carries all the  way up to the highest bin.
