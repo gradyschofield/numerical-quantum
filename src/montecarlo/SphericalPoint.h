@@ -7,6 +7,9 @@
 
 #include<cmath>
 
+#include<EuclideanPoint.h>
+#include<MathUtil.h>
+
 class SphericalPoint {
     double r, theta, phi;
 public:
@@ -28,15 +31,44 @@ public:
         return getR() * getR() * sin(getTheta());
     }
 
-    static double lengthOfSum(SphericalPoint const & p1, SphericalPoint const & p2) {
-        double x1 = p1.getR() * cos(p1.getPhi()) * sin(p1.getTheta());
-        double y1 = p1.getR() * sin(p1.getPhi()) * sin(p1.getTheta());
-        double z1 = p1.getR() * cos(p1.getTheta());
+    EuclideanPoint toEuclideanPoint() const {
+        double x = getR() * cos(getPhi()) * sin(getTheta());
+        double y = getR() * sin(getPhi()) * sin(getTheta());
+        double z = getR() * cos(getTheta());
+        return EuclideanPoint(x, y, z);
+    }
 
-        double x2 = p2.getR() * cos(p2.getPhi()) * sin(p2.getTheta());
-        double y2 = p2.getR() * sin(p2.getPhi()) * sin(p2.getTheta());
-        double z2 = p2.getR() * cos(p2.getTheta());
-        return sqrt( (x1+x2)*(x1+x2) + (y1+y2)*(y1+y2) + (z1+z2)*(z1+z2));
+    double dot(SphericalPoint const & p) const {
+        return toEuclideanPoint().dot(p.toEuclideanPoint());
+    }
+
+    SphericalPoint operator+(SphericalPoint const & p) const {
+        return fromEuclidean(toEuclideanPoint() + p.toEuclideanPoint());
+    }
+
+    static SphericalPoint fromEuclidean(EuclideanPoint const & p) {
+        double r = sqrt(square(p.getX()) + square(p.getY()) + square(p.getZ()));
+        if(r == 0) {
+            return SphericalPoint(0, 0, 0);
+        }
+        double theta = acos(p.getZ() / r);
+        if(theta == 0 || theta == M_PI) {
+            return SphericalPoint(r, theta, 0);
+        }
+        double phi = atan2(p.getY(), p.getX());
+        return SphericalPoint(r, theta, phi);
+    }
+
+    static double lengthOfSum(SphericalPoint const & p1, SphericalPoint const & p2) {
+        return (p1.toEuclideanPoint() + p2.toEuclideanPoint()).norm();
+    }
+
+    static double lengthOfSum(vector<SphericalPoint> const & pointList) {
+        EuclideanPoint e;
+        for(auto & p : pointList) {
+            e += p.toEuclideanPoint();
+        }
+        return e.norm();
     }
 };
 

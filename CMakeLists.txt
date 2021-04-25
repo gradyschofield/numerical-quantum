@@ -50,7 +50,9 @@ set(MONTE_CARLO_LIB_SRC
         src/montecarlo/Generator.h
         src/montecarlo/PartialWork.h
         src/montecarlo/CommandLine.h
-        src/montecarlo/BigSum.h)
+        src/montecarlo/BigSum.h
+        src/montecarlo/EuclideanPoint.h
+        src/MathUtil.h)
 
 add_executable(spheres src/montecarlo/Spheres.cpp)
 
@@ -60,3 +62,5 @@ add_executable(firstIntegral src/montecarlo/FirstIntegral.cpp ${MONTE_CARLO_LIB_
 if( UNIX AND NOT APPLE)
         target_link_libraries(firstIntegral pthread)
 endif()
+
+add_executable(secondIntegral src/montecarlo/SecondIntegral.cpp ${MONTE_CARLO_LIB_SRC})
