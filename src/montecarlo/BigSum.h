@@ -12,6 +12,23 @@
 
 using namespace std;
 
+/*
+ * The point of this class is to avoid cancellation and truncation errors in sums that may be
+ * composed of trillions of terms and where the relative sizes of the terms is not known.
+ * It's meant to be used in Monte Carlo integration.
+ *
+ * This class represents a sum by keeping partial results in several bins, each of which stores a
+ * number that doesn't exceed a certain order of magnitude. When a number is added to the sum,
+ * it is accumulated into the appropriate bin based on their size.  When the value in a bin goes
+ * over the order of magnitude limit for that bin, the bin value is added to the bin for next largest
+ * order of magnitude and the original bin is set to zero.  This "carry" operation can cause a cascade
+ * of carries all the  way up to the highest bin.
+ *
+ * The point of this is to avoid adding small numbers to large ones until the small ones have accumulated
+ * into a more substantial quantity.  Negative and positive terms are accumulated separately to
+ * avoid cancellation.
+ */
+
 class BigSum {
     vector<double> positiveAccumulators;
     vector<double> negativeAccumulators;
@@ -73,26 +90,6 @@ public:
         return positiveSum + negativeSum;
     }
 
-    void print() {
-        cout << "orders: " << orders << "\n";
-        double sum = 0;
-        for(int i = 0; i < orders; ++i) {
-            cout << positiveAccumulators[i] << " ";
-            sum += positiveAccumulators[i];
-        }
-        cout << "\n";
-        for(int i = 0; i < orders; ++i) {
-            cout << negativeAccumulators[i] << " ";
-            sum += negativeAccumulators[i];
-        }
-        cout << "\n";
-        for(int i = 0; i < orders; ++i) {
-            cout << orderLimits[i] << " ";
-        }
-        cout << "\n";
-        cout << "sum: " << setprecision(16) << sum << setprecision(5) << "\n";
-    }
-
     void add(double x) {
         int bin = min(orders-1, (int)max(0.0, round(log10(fabs(x))) - binOffset));
         if(x > 0) {
@@ -114,6 +111,26 @@ public:
 
     void operator-=(double x) {
         add(-x);
+    }
+
+    void print() {
+        cout << "orders: " << orders << "\n";
+        double sum = 0;
+        for(int i = 0; i < orders; ++i) {
+            cout << positiveAccumulators[i] << " ";
+            sum += positiveAccumulators[i];
+        }
+        cout << "\n";
+        for(int i = 0; i < orders; ++i) {
+            cout << negativeAccumulators[i] << " ";
+            sum += negativeAccumulators[i];
+        }
+        cout << "\n";
+        for(int i = 0; i < orders; ++i) {
+            cout << orderLimits[i] << " ";
+        }
+        cout << "\n";
+        cout << "sum: " << setprecision(16) << sum << setprecision(5) << "\n";
     }
 
 };
