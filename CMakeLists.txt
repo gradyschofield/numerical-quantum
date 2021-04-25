@@ -64,3 +64,6 @@ if( UNIX AND NOT APPLE)
 endif()
 
 add_executable(secondIntegral src/montecarlo/SecondIntegral.cpp ${MONTE_CARLO_LIB_SRC})
+if( UNIX AND NOT APPLE)
+        target_link_libraries(secondIntegral pthread)
+endif()
