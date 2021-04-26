@@ -31,6 +31,7 @@ int main(int argc, char ** argv) {
     N /= numThreads;
     vector<PartialWork<AccumulatorType>> partialWorkArray(numThreads);
     vector<thread> threads;
+    timespec start = Time::startTimer();
     for(int t = 0; t < numThreads; ++t) {
         threads.emplace_back([&,t]() {
             Generator generator1(bounds1);
@@ -58,9 +59,11 @@ int main(int argc, char ** argv) {
     for(thread & t : threads) {
         t.join();
     }
+    double runtime = Time::stopTimer(start);
     PartialWork<AccumulatorType> result = PartialWork<AccumulatorType>::accumulate(partialWorkArray);
     double volumeNormalizer = square(bounds1.getVolume()) * bounds2.getVolume() / (result.getInVolume() + result.getOutVolume());
     cout << "Number of threads used: " << numThreads << "\n";
+    cout << "Run time: " << runtime/3600 << " hours \n";
     cout << "Number of points (millions): " << (numThreads*N)/1E6 << "\n";
     cout << "Integration region volume by monte carlo: " << volumeNormalizer * result.getInVolume() << "\n";
     cout << "Monte Carlo integral: " << volumeNormalizer * result.getIntegral() << "\n";
