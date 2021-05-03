@@ -65,5 +65,10 @@ endif()
 
 add_executable(secondIntegral_a src/montecarlo/SecondIntegral_a.cpp ${MONTE_CARLO_LIB_SRC})
 if( UNIX AND NOT APPLE)
-        target_link_libraries(secondIntegral_a  pthread)
+        target_link_libraries(secondIntegral_a pthread)
+endif()
+
+add_executable(secondIntegral_a2 src/montecarlo/SecondIntegral_a2.cpp ${MONTE_CARLO_LIB_SRC})
+if( UNIX AND NOT APPLE)
+        target_link_libraries(secondIntegral_a2 pthread)
 endif()

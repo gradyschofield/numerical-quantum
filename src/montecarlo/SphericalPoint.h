@@ -72,4 +72,9 @@ public:
     }
 };
 
+ostream & operator<<(ostream & ofs, SphericalPoint const & p) {
+    ofs << "(" << p.getR() << ", " << p.getTheta() << ", " << p.getPhi() << ")";
+    return ofs;
+}
+
 #endif //ATOM_SPHERICALPOINT_H
