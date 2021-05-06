@@ -72,3 +72,21 @@ add_executable(secondIntegral_a2 src/montecarlo/SecondIntegral_a2.cpp ${MONTE_CA
 if( UNIX AND NOT APPLE)
         target_link_libraries(secondIntegral_a2 pthread)
 endif()
+
+if( UNIX AND NOT APPLE)
+        include_directories(
+                src/montecarlo/cuda/cudalib
+        )
+
+        set(SRC
+                src/montecarlo/cuda/cudalib/CudaArray.h
+                src/montecarlo/cuda/cudalib/CudaModule.h
+                src/montecarlo/cuda/cudalib/CudaFunction.h
+                src/montecarlo/cuda/cudalib/CudaDevice.cpp
+                src/montecarlo/cuda/cudalib/CudaDevice.h
+                src/montecarlo/cuda/cudalib/CudaContext.cpp
+                src/montecarlo/cuda/cudalib/CudaContext.h)
+
+        add_executable(basicCudaTest src/montecarlo/cuda/BasicCudaTest.cpp ${CUDA_SRC})
+        target_link_libraries(basicCudaTest pthread cuda)
+endif()
