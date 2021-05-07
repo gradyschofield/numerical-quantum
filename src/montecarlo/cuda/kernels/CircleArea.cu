@@ -4,13 +4,14 @@ class BigSum {
     float positiveAccumulators[25];
     float negativeAccumulators[25];
     float orderLimits[25];
-    int binOffset
+    int binOffset;
+    int orders;
 
 public:
 
     BigSum() {
         float minBin = 1E-5;
-        int orders = 25;
+        orders = 25;
         binOffset = round(log10(minBin));
         double lowestLimit = pow(10, binOffset);
         for (int i = 0; i < orders; ++i) {
@@ -21,8 +22,8 @@ public:
     }
     void add(float x) {
         int bin = min(orders-1, (int)max(0.0, round(log10(fabs(x))) - binOffset));
-        float positiveInc = max(0, x);
-        float negativeInc = min(0, x);
+        float positiveInc = max(0.0f, x);
+        float negativeInc = min(0.0f, x);
         positiveAccumulators[bin] += positiveInc;
         negativeAccumulators[bin] += negativeInc;
     }

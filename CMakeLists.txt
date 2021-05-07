@@ -43,6 +43,9 @@ add_executable(twoparticle_fd src/manybody1D/twoparticle/TwoParticleFiniteDiffer
 target_link_libraries(twoparticle_fd blas lapacke)
 
 add_executable(twoCircles src/montecarlo/TwoCircles.cpp)
+if( UNIX AND NOT APPLE)
+        target_link_libraries(twoCircles pthread)
+endif()
 
 set(MONTE_CARLO_LIB_SRC
         src/montecarlo/SphericalPoint.h

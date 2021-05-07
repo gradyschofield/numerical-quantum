@@ -154,7 +154,7 @@ public:
 };
 
 int main(int argc, char ** argv) {
-    long N = 1E7;
+    long N = 1E10;
     double R = 2;
     Circle c1(0, 0, 2);
     Circle c2(0, 1, 2);
@@ -163,7 +163,6 @@ int main(int argc, char ** argv) {
     vector<Circle> circles{c1, c2, c3, c4};
     Bounds bounds = Bounds::find(circles);
     int numThreads = 2;
-    N *= numThreads;
     cout << "starting bounds: " << bounds.getMinX() << " " << bounds.getMaxX()<< " " << bounds.getMinY() << " " << bounds.getMaxY() << "\n";
     for(int i = 0; i < 2; ++i) {
         long in = 0;
@@ -191,7 +190,6 @@ int main(int argc, char ** argv) {
                 clock_gettime(CLOCK_REALTIME, &t2);
                 double time = (t2.tv_sec * 1E9 + t2.tv_nsec - t1.tv_sec * 1E9 - t1.tv_nsec)/1E9;
                 cout << time / N * numThreads << " time per point\n";
-                cout << "Observed bounds x: " << bounds.getMinX() << " " << bounds.getMaxX() << " y: " << bounds.getMinY() << " " << bounds.getMaxY() << "\n";
             });
         }
         for (thread &t : threads) {
@@ -201,7 +199,7 @@ int main(int argc, char ** argv) {
             in += counts[t].in;
             out += counts[t].out;
         }
-        cout << N << " points: " << in / (double) (in + out) * bounds.getVolume() << " volume: " << R * R * M_PI << "\n";
+        cout << N << " points: " << in / (double) (in + out) * bounds.getVolume() << "\n";
         bounds = empericalBounds[0].grow(1.01);
     }
     return 0;
