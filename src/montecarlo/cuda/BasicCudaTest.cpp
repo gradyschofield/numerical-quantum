@@ -86,9 +86,9 @@ int main() {
     }
     cout << "total in: " << totalIn << "\n";
     cout << "total out: " << totalOut << "\n";
-    double approx = totalIn / (double)(totalIn + totalOut);
+    double approx = 25.0 * totalIn / (double)(totalIn + totalOut);
     cout << setprecision(16) << approx << "\n";
-    cout << setprecision(16) << fabs(approx - 0.5*0.5*M_PI)/(0.5*0.5*M_PI) << "\n";
+    cout << "cpu approx: " << 12.5664 << "\n";
     double time = (t2.tv_sec * 1E9 + t2.tv_nsec - t1.tv_sec * 1E9 - t1.tv_nsec)/1E9;
     cout << "time: " << time << "\n";
     cout << "time per sample: " << time / numSamples[0] << "\n";

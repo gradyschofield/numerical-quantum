@@ -15,10 +15,15 @@ extern "C" __global__ void integrate(curandState * states,
     unsigned long long in = 0;
     unsigned long long out = 0;
     for(unsigned long long i = 0; i < n; ++i) {
-        float x = curand_uniform(state) - 0.5f;
-        float y = curand_uniform(state) - 0.5f;
+        float x = 5 * curand_uniform(state) - 2;
+        float y = 5 * curand_uniform(state) - 2;
 
-        int z = x*x + y*y < 0.25f ? 1 : 0;
+        float d1 = x*x + y*y;
+        float d2 = (x-1)*(x-1) + y*y;
+        float d3 = (x-1)*(x-1) + (y-1)*(y-1);
+        float d4 = x*x + (y-1)*(y-1);
+
+        int z = d1 < 4 && d2 < 4 && d3 < 4 && d4 < 4 ? 1 : 0;
         in += z;
         out += 1-z;
     }

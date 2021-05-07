@@ -154,7 +154,7 @@ public:
 };
 
 int main(int argc, char ** argv) {
-    long N = 5E8;
+    long N = 1E7;
     double R = 2;
     Circle c1(0, 0, 2);
     Circle c2(0, 1, 2);
@@ -176,6 +176,8 @@ int main(int argc, char ** argv) {
                 Count &count = counts[t];
                 Generator generator(bounds);
                 Bounds & bounds = empericalBounds[t];
+                timespec t1, t2;
+                clock_gettime(CLOCK_REALTIME, &t1);
                 for (long i = 0; i < N / numThreads; ++i) {
                     Point p = generator.generate();
                     bool insideAll = Circle::insideAll(p, circles);
@@ -186,6 +188,9 @@ int main(int argc, char ** argv) {
                         ++count.out;
                     }
                 }
+                clock_gettime(CLOCK_REALTIME, &t2);
+                double time = (t2.tv_sec * 1E9 + t2.tv_nsec - t1.tv_sec * 1E9 - t1.tv_nsec)/1E9;
+                cout << time / N * numThreads << " time per point\n";
                 cout << "Observed bounds x: " << bounds.getMinX() << " " << bounds.getMaxX() << " y: " << bounds.getMinY() << " " << bounds.getMaxY() << "\n";
             });
         }
