@@ -1,6 +1,5 @@
 #include <iostream>
 #include <iomanip>
-#include <vector>
 
 #include<cuda.h>
 #include<curand_kernel.h>
@@ -35,8 +34,8 @@ int main() {
     cout << "get function: " << ret << "\n";
 
     /*
-    CudaModule module("random.ptx");
-    CudaFunction function = module.getFunction("initRandom");
+    CudaModule module("CircleArea.ptx");
+    CudaFunction function = module.getFunction("integrate");
      */
 
     int numThreadsPerBlock = 64;
