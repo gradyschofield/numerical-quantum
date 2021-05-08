@@ -81,7 +81,7 @@ if( UNIX AND NOT APPLE)
                 src/montecarlo/cuda/cudalib
         )
 
-        set(SRC
+        set(CUDA_SRC
                 src/montecarlo/cuda/cudalib/CudaArray.h
                 src/montecarlo/cuda/cudalib/CudaModule.h
                 src/montecarlo/cuda/cudalib/CudaFunction.h

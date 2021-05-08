@@ -5,42 +5,17 @@
 #include<curand_kernel.h>
 
 #include<CudaArray.h>
+#include<CudaModule.h>
+#include<CudaFunction.h>
 
 using namespace std;
 
 int main() {
-    CUresult ret;
-    ret = cuInit(0);
-    cout << "cu init: " << ret << "\n";
 
-    int devCount;
-    cuDeviceGetCount(&devCount);
-    cout << "device count: " << devCount << "\n";
-
-    CUdevice device;
-    ret = cuDeviceGet(&device, 0);
-    cout << "device get: " << ret << "\n";
-
-    CUcontext context;
-    ret = cuCtxCreate(&context, 0, device);
-    cout << "ctx create: " << ret << "\n";
-
-    CUmodule module;
-    ret = cuModuleLoad(&module, "CircleArea.ptx");
-    cout << "module load: " << ret << "\n";
-
-    CUfunction function;
-    ret = cuModuleGetFunction(&function, module, "integrate");
-    cout << "get function: " << ret << "\n";
-
-    /*
     CudaModule module("CircleArea.ptx");
     CudaFunction function = module.getFunction("integrate");
-     */
 
-    int numThreadsPerBlock = 64;
-    int numBlocks = 256;
-    int numThreads = numBlocks * numThreadsPerBlock;
+    int numThreads = 64 * 256;
 
     CudaArray<curandState> curandStates(numThreads);
     CudaArray<uint64_t> inCount(numThreads);
@@ -62,17 +37,8 @@ int main() {
 
     timespec t1, t2;
     clock_gettime(CLOCK_REALTIME, &t1);
-    /*
-    function.run(numBlocks, 1, 1,
-                 numThreadsPerBlock, 1, 1,
-                 0, args);
+    function.run(numThreads, args);
     function.wait();
-     */
-    ret = cuLaunchKernel(function,
-                   numBlocks, 1, 1,
-                   numThreadsPerBlock, 1, 1,
-                   0, 0, args, 0);
-    cuStreamSynchronize(0);
     clock_gettime(CLOCK_REALTIME, &t2);
 
     inCount.download();
@@ -91,12 +57,6 @@ int main() {
     double time = (t2.tv_sec * 1E9 + t2.tv_nsec - t1.tv_sec * 1E9 - t1.tv_nsec)/1E9;
     cout << "time: " << time << "\n";
     cout << "time per sample: " << time / numSamples[0] << "\n";
-
-    ret = cuModuleUnload(module);
-    cout << "module unload: " << ret << "\n";
-
-    ret = cuCtxDestroy(context);
-    cout << "ctx destroy: " << ret << "\n";
 
     return 0;
 }
