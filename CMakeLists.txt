@@ -4,7 +4,12 @@ project(atom)
 set(CMAKE_RELEASE_CXX_FLAGS -O3)
 set(CMAKE_DEBUG_CXX_FLAGS -O0)
 
-set(CMAKE_CXX_STANDARD 23)
+if( UNIX AND NOT APPLE)
+        set(CMAKE_CXX_STANDARD 23)
+else()
+        set(CMAKE_CXX_STANDARD 20)
+endif()
+
 
 include_directories(
         src/
