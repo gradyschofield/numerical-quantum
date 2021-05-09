@@ -4,7 +4,7 @@ project(atom)
 set(CMAKE_RELEASE_CXX_FLAGS -O3)
 set(CMAKE_DEBUG_CXX_FLAGS -O0)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 include_directories(
         src/
@@ -88,8 +88,11 @@ if( UNIX AND NOT APPLE)
                 src/montecarlo/cuda/cudalib/CudaDevice.cpp
                 src/montecarlo/cuda/cudalib/CudaDevice.h
                 src/montecarlo/cuda/cudalib/CudaContext.cpp
-                src/montecarlo/cuda/cudalib/CudaContext.h)
+                src/montecarlo/cuda/cudalib/CudaContext.h src/montecarlo/cuda/FirstIntegralCuda.cpp)
 
         add_executable(basicCudaTest src/montecarlo/cuda/BasicCudaTest.cpp ${CUDA_SRC})
         target_link_libraries(basicCudaTest pthread cuda)
+
+        add_executable(firstIntegralCuda src/montecarlo/cuda/FirstIntegralCuda.cpp ${CUDA_SRC})
+        target_link_libraries(firstIntegralCuda pthread cuda)
 endif()

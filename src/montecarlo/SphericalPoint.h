@@ -63,6 +63,10 @@ public:
         return (p1.toEuclideanPoint() + p2.toEuclideanPoint()).norm();
     }
 
+    static double lengthSquareOfSum(SphericalPoint const & p1, SphericalPoint const & p2) {
+        return (p1.toEuclideanPoint() + p2.toEuclideanPoint()).normSquare();
+    }
+
     static double lengthOfSum(vector<SphericalPoint> const & pointList) {
         EuclideanPoint e;
         for(auto & p : pointList) {

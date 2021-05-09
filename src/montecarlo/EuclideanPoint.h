@@ -36,6 +36,10 @@ public:
         return sqrt(x*x + y*y + z*z);
     }
 
+    double normSquare() const {
+        return x*x + y*y + z*z;
+    }
+
     EuclideanPoint operator+(EuclideanPoint p) const {
         return EuclideanPoint(x+p.x, y+p.y, z+p.z);
     }

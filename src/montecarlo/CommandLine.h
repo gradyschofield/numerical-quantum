@@ -15,7 +15,7 @@ class CommandLine {
 public:
     static long parseNumPoints(int argc, char **argv, long defaultNumPoints) {
         if(argc != 2) {
-            cout << "Using " << defaultNumPoints << " evaluation points since no number specified on the command line." << endl;
+            cout << "Using " << (double)defaultNumPoints << " evaluation points since no number specified on the command line." << endl;
             return defaultNumPoints;
         } else {
             stringstream sstr(argv[1]);

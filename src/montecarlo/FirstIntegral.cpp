@@ -39,6 +39,8 @@ int main(int argc, char ** argv) {
     N /= numThreads;
     vector<PartialWork<AccumulatorType>> partialWorkArray(numThreads);
     vector<thread> threads;
+    timespec t1, t2;
+    clock_gettime(CLOCK_REALTIME, &t1);
     for(int t = 0; t < numThreads; ++t) {
         threads.emplace_back([&,t]() {
             Generator generator(bounds);
@@ -59,12 +61,18 @@ int main(int argc, char ** argv) {
     for(thread & t : threads) {
         t.join();
     }
+    clock_gettime(CLOCK_REALTIME, &t2);
+    double time = (t2.tv_sec * 1E9 + t2.tv_nsec - t1.tv_sec * 1E9 - t1.tv_nsec)/1E9;
     PartialWork<AccumulatorType> result = PartialWork<AccumulatorType>::accumulate(partialWorkArray);
     double volumeNormalizer = pow(bounds.getVolume(), 2) / (result.getInVolume() + result.getOutVolume());
     cout << "Number of threads used: " << numThreads << "\n";
     cout << "Number of points (millions): " << (numThreads*N)/1E6 << "\n";
     cout << "Integration region volume by monte carlo: " << volumeNormalizer * result.getInVolume() << "\n";
-    cout << "Monte Carlo integral: " << volumeNormalizer * result.getIntegral() << "\n";
-    cout << "Exact integral: " << 4 * M_PI * M_PI << "\n";
+    double integral = volumeNormalizer * result.getIntegral();
+    double exact =  4* M_PI * M_PI;
+    cout << "Monte Carlo integral: " << integral << "\n";
+    cout << "Exact integral: " << exact << "\n";
+    cout << "Relative error: " << fabs(integral - exact)/exact << "\n";
+    cout << "Time per sample " << time/(numThreads*N) << "\n";
     return 0;
 }
