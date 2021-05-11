@@ -58,7 +58,7 @@ public:
     }
 
     float generateFloat() {
-        static float maxInv = 1.0f / (float)numeric_limits<uint64_t>::max();
+        static float maxInv = 1.0f / (float)numeric_limits<uint32_t>::max();
         uint32_t t = generate();
         return t * maxInv;
     }
