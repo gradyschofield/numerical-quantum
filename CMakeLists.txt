@@ -103,3 +103,5 @@ if( UNIX AND NOT APPLE)
 endif()
 
 add_executable(testMersenneTwister src/montecarlo/mersenne/TestMersenneTwister.cpp)
+
+add_executable(testJumpAhead src/montecarlo/mersenne/TestJumpAhead.cpp)
