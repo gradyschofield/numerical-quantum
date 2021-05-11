@@ -95,9 +95,11 @@ if( UNIX AND NOT APPLE)
                 src/montecarlo/cuda/cudalib/CudaContext.cpp
                 src/montecarlo/cuda/cudalib/CudaContext.h src/montecarlo/cuda/FirstIntegralCuda.cpp)
 
-        add_executable(basicCudaTest src/montecarlo/cuda/BasicCudaTest.cpp ${CUDA_SRC})
+        add_executable(basicCudaTest src/montecarlo/cuda/BasicCudaTest.cpp ${CUDA_SRC} src/montecarlo/mersenne/TestMersenneTwister.cpp)
         target_link_libraries(basicCudaTest pthread cuda)
 
         add_executable(firstIntegralCuda src/montecarlo/cuda/FirstIntegralCuda.cpp ${CUDA_SRC})
         target_link_libraries(firstIntegralCuda pthread cuda)
 endif()
+
+add_executable(testMersenneTwister src/montecarlo/mersenne/TestMersenneTwister.cpp)
