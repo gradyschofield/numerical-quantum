@@ -15,6 +15,7 @@ include_directories(
         src/
         src/stdeig
         src/montecarlo
+        src/montecarlo/mersenne
         )
 
 set(PHYSICS_SRC
@@ -102,6 +103,9 @@ if( UNIX AND NOT APPLE)
         target_link_libraries(firstIntegralCuda pthread cuda)
 endif()
 
-add_executable(testMersenneTwister src/montecarlo/mersenne/TestMersenneTwister.cpp)
+set(MERSENNE_SRC
+        src/montecarlo/mersenne/MersenneTwister.h
+        )
+add_executable(testMersenneTwister src/montecarlo/mersenne/TestMersenneTwister.cpp ${MERSENNE_SRC})
 
-add_executable(testJumpAhead src/montecarlo/mersenne/TestJumpAhead.cpp)
+add_executable(testJumpAhead src/montecarlo/mersenne/TestJumpAhead.cpp ${MERSENNE_SRC})
