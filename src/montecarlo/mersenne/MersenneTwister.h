@@ -39,14 +39,22 @@ public:
     MersenneTwister(int n, int m, int r, int a, int u, int s, int t, int l, int b, int c)
             : state(n), n(n), m(m), a(a), u(u), s(s), t(t), l(l), b(b), c(c)
     {
-        upperMask = ((uint32_t)~0) << (32-r);
-        lowerMask = ((uint32_t)~0) >> r;
+        upperMask = ((uint32_t)~0) << r;
+        lowerMask = ((uint32_t)~0) >> (32-r);
     }
 
     void initState() {
         for(uint32_t & x : state) {
             x = rand();
         }
+    }
+
+    void setState(vector<uint32_t> const & v) {
+        state = v;
+    }
+
+    vector<uint32_t> getState() const {
+        return state;
     }
 
     uint32_t generateUntempered() {

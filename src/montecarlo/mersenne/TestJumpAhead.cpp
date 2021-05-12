@@ -3,9 +3,13 @@
 //
 
 #include<iostream>
+#include<sstream>
 #include<unordered_set>
 #include<vector>
+#include<thread>
 #include<tuple>
+
+#include<MersenneTwister.h>
 
 using namespace std;
 
@@ -65,9 +69,9 @@ namespace std {
  * The matrix is stored in column major ordering.  The first word is the first 32 rows of column 1.
  */
 class DenseF2Matrix {
-    vector<uint32_t> elements;
     int dim;
     int wordsPerColumn;
+    vector<uint32_t> elements;
 public:
 
     DenseF2Matrix(int dim)
@@ -84,18 +88,63 @@ public:
     }
 
     DenseF2Matrix square() const {
+        DenseF2Matrix ret(dim);
+        vector<thread> threads;
+        int numThreads = thread::hardware_concurrency();
+        int stop = 0;
+        for(int i = 0; i < numThreads; ++i) {
+            int start = stop;
+            stop = start + (dim / numThreads) + (i < dim % numThreads ? 1 : 0);
+            threads.emplace_back([start, stop, &ret, this]() {
+                for (int column = start; column < stop; ++column) {
+                    ret.setColumn(column, multiply(getColumn(column)));
+                }
+            });
+        }
+        for(thread & t : threads) {
+            t.join();
+        }
+        return ret;
+    }
+
+    vector<uint32_t> getColumn(int column) const {
+        vector<uint32_t> ret(wordsPerColumn);
+        for(int row = 0; row < wordsPerColumn; ++row) {
+            ret[row] = elements[column * wordsPerColumn + row];
+        }
+        return ret;
+    }
+
+    void setColumn(int column, vector<uint32_t> const & v) {
+        for(int row = 0; row < wordsPerColumn; ++row) {
+            elements[column * wordsPerColumn + row] = v[row];
+        }
+    }
+
+    vector<uint32_t> multiply(vector<uint32_t> const & v) const {
+        vector<uint32_t> ret(wordsPerColumn);
+        for(int column = 0; column < dim; ++column) {
+            int columnWord = column / 32;
+            int columnBit = 31 - (column % 32);
+            if((v[columnWord] & (1 << columnBit)) != 0) {
+                for (int rowWord = 0; rowWord < wordsPerColumn; ++rowWord) {
+                    ret[rowWord] ^= elements[column * wordsPerColumn + rowWord];
+                }
+            }
+        }
+        return ret;
     }
 
     void setElement(int row, int column) {
-        int columnWord = column / 32;
-        int columnBit = column % 32;
-        elements[row * wordsPerColumn + columnWord] |= 1 << columnBit;
+        int rowWord = row / 32;
+        int rowBit = 31 - (row % 32);
+        elements[column * wordsPerColumn + rowWord] |= 1 << rowBit;
     }
 
     uint32_t getElement(int row, int column) const {
-        int columnWord = column / 32;
-        int columnBit = column % 32;
-        return (elements[row * wordsPerColumn + columnWord] & (1 << columnBit)) == 0 ? 0 : 1;
+        int rowWord = row / 32;
+        int rowBit = 31 - (row % 32);
+        return (elements[column * wordsPerColumn + rowWord] & (1 << rowBit)) == 0 ? 0 : 1;
     }
 };
 
@@ -117,25 +166,19 @@ public:
 
     DenseF2Matrix bake(int w) const {
         int maxRow = 0;
-        int maxColumn = 0;
         for(auto & p : elements) {
             maxRow = max(maxRow, p.getRow());
-            maxColumn = max(maxColumn, p.getColumn());
+        }
+        int dim = maxRow + 1;
+
+        if(dim % w != 0) {
+            stringstream sstr;
+            sstr << "Dimension is not a multiple of w. Dimension : " << dim << " w: " << w;
+            throw runtime_error(sstr.str());
         }
 
-        if(maxRow != maxColumn) {
-            throw runtime_error("Max row didn't match max column in SparseMatrix::bake");
-        }
-
-        if(maxRow % w != 0) {
-            throw runtime_error("Max row is not a multiple of w");
-        }
-
-        if(maxColumn % w != 0) {
-            throw runtime_error("Max column is not a multiple of w");
-        }
-
-        DenseF2Matrix matrix(maxRow);
+        cout << "Max row " << dim << "\n";
+        DenseF2Matrix matrix(dim);
         for(auto & p : elements) {
             matrix.setElement(p.getRow(), p.getColumn());
         }
@@ -147,11 +190,16 @@ int main(int argc, char ** argv) {
     int n = 624;
     int w = 32;
     int r = 31;
+    int m = 397;
     uint32_t a = 0x9908b0df;
     int rowOffset = 0;
     int columnOffset = 0;
+    int blockStart = w * m;
     SparseMatrix A;
-    for(int z = 0; z < n; ++z) {
+    for(int shiftRow = 0; shiftRow < m * w; ++shiftRow) {
+        A.insert(shiftRow, w * (n - m) + shiftRow);
+    }
+    for(int z = 0; z < n - m; ++z) {
         /*
          * x_k = x_k+m + x_1^u | x_2^l)
          * 0 0 0 ... 0 0 a31
@@ -166,36 +214,82 @@ int main(int argc, char ** argv) {
          */
 
         /*
-         * Handle the upper w-r bits of x_k
+         * Handle the upper w-r bits of x_k in multiplication by A
          */
-        for(int row = rowOffset + 1; row < rowOffset + w - r; ++row) {
-            int col = row - 1;
-            A.insert(row, col);
+        for(int row = rowOffset; row < rowOffset + w - r; ++row) {
+            int col = row;
+            A.insert(blockStart + row + 1, col);
         }
 
         /*
-         * Handle the lower r bits of x_(k+1)
+         * Handle the lower r bits of x_(k+1) in multiplication by A
          */
-        for(int row = rowOffset + w - r; row < rowOffset + w; ++row) {
-            int col = row + w - 1;
-            A.insert(row, col);
+        for(int row = rowOffset + w - r; row < rowOffset + w - 1; ++row) {
+            int col = (row + w) % (n*w);
+            A.insert(blockStart + row + 1, col);
         }
 
+#if 1
+        /*
+         * Handle the last column of A
+         */
         for(int i = 0; i < w; ++i) {
             int row = rowOffset + i;
-            int col = columnOffset + 2*w;
+            int col = (columnOffset + 2*w - 1) % (n*w);
             // The low order bit of 'a' is in the lower left corner of the matrix, hence a shift of w-i
-            if(a & (1 << (w-i))) {
-                A.insert(row, col);
+            if(a & (1 << (w-1-i))) {
+                A.insert(blockStart + row, col);
             }
         }
 
-        columnOffset += w;
+#endif
+        /*
+         * Handle the sum of x_(k+m)
+         */
+        for(int i = 0; i < w; ++i) {
+            int row = rowOffset + i;
+            int col = (columnOffset + m * w + i) % (n*w);
+            A.insert(blockStart + row, col);
+        }
+
         rowOffset += w;
+        columnOffset += w;
     }
 
     DenseF2Matrix denseMatrix = A.bake(w);
 
+    MersenneTwister mt19937 = MersenneTwister::createMT19937();
+    vector<uint32_t> state = mt19937.getState();
+
+    vector<uint32_t> product = denseMatrix.multiply(state);
+    int numIterationsChecked = 1;
+    int k = 1000;
+    for(int j = 0; j < numIterationsChecked; ++j) {
+        for (int i = 0; i < (n - m); ++i) {
+            uint32_t r = mt19937.generateUntempered();
+            if (product[m + i] != r) {
+                cout << "mistake at position " << k << " " << product[m + i] << " " << r << "\n";
+            }
+            ++k;
+        }
+        product = denseMatrix.multiply(product);
+    }
+    cout << "Iteration check done on " << k * (n-m) << " elements" << endl;
+
     cout << "Num nonzero elements in A " << A.getNumElements() << "\n";
+
+    int numMultiplies = 15;
+    timespec t1, t2;
+    uint64_t power = 1;
+    for(int i = 0; i < numMultiplies; ++i) {
+        clock_gettime(CLOCK_REALTIME, &t1);
+        denseMatrix = denseMatrix.square();
+        power = power + power;
+        clock_gettime(CLOCK_REALTIME, &t2);
+        double time = (t2.tv_sec * 1E9 + t2.tv_nsec - t1.tv_sec * 1E9 - t1.tv_nsec)/1E9;
+        cout << "time for multiply " << i + 1 << ": " << time << " seconds (the matrix is getting denser)\n";
+    }
+    cout << "power: " << power << "\n";
+    cout << "iterate: " << power*(n-m) << "\n";
     return 0;
 }
