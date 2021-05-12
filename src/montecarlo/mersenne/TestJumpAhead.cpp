@@ -262,8 +262,8 @@ int main(int argc, char ** argv) {
     vector<uint32_t> state = mt19937.getState();
 
     vector<uint32_t> product = denseMatrix.multiply(state);
-    int numIterationsChecked = 1;
-    int k = 1000;
+    int numIterationsChecked = 1000;
+    int k = 0;
     for(int j = 0; j < numIterationsChecked; ++j) {
         for (int i = 0; i < (n - m); ++i) {
             uint32_t r = mt19937.generateUntempered();
@@ -278,16 +278,17 @@ int main(int argc, char ** argv) {
 
     cout << "Num nonzero elements in A " << A.getNumElements() << "\n";
 
-    int numMultiplies = 15;
+    int numMultiplies = 10;
     timespec t1, t2;
     uint64_t power = 1;
+    cout << "The matrix gets denser as more multiplications are done, hence the slowdown\n";
     for(int i = 0; i < numMultiplies; ++i) {
         clock_gettime(CLOCK_REALTIME, &t1);
         denseMatrix = denseMatrix.square();
         power = power + power;
         clock_gettime(CLOCK_REALTIME, &t2);
         double time = (t2.tv_sec * 1E9 + t2.tv_nsec - t1.tv_sec * 1E9 - t1.tv_nsec)/1E9;
-        cout << "time for multiply " << i + 1 << ": " << time << " seconds (the matrix is getting denser)\n";
+        cout << "time for multiply " << i + 1 << ": " << time << " seconds\n";
     }
     cout << "power: " << power << "\n";
     cout << "iterate: " << power*(n-m) << "\n";
