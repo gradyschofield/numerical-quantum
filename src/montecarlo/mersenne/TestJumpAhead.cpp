@@ -3,6 +3,7 @@
 //
 
 #include<iostream>
+#include<fstream>
 #include<sstream>
 #include<unordered_set>
 #include<vector>
@@ -135,6 +136,26 @@ public:
         return ret;
     }
 
+    DenseF2Matrix multiply(DenseF2Matrix const & m) const {
+        DenseF2Matrix ret(dim);
+        vector<thread> threads;
+        int numThreads = thread::hardware_concurrency();
+        int stop = 0;
+        for(int i = 0; i < numThreads; ++i) {
+            int start = stop;
+            stop = start + (dim / numThreads) + (i < dim % numThreads ? 1 : 0);
+            threads.emplace_back([start, stop, &m, &ret, this]() {
+                for (int column = start; column < stop; ++column) {
+                    ret.setColumn(column, multiply(m.getColumn(column)));
+                }
+            });
+        }
+        for(thread & t : threads) {
+            t.join();
+        }
+        return ret;
+    }
+
     void setElement(int row, int column) {
         int rowWord = row / 32;
         int rowBit = 31 - (row % 32);
@@ -145,6 +166,17 @@ public:
         int rowWord = row / 32;
         int rowBit = 31 - (row % 32);
         return (elements[column * wordsPerColumn + rowWord] & (1 << rowBit)) == 0 ? 0 : 1;
+    }
+
+    uint32_t trace() const {
+        uint32_t accum = 0;
+        for(int column = 0; column < dim; ++column) {
+            int row = column;
+            int rowWord = row / 32;
+            int rowBit = 31 - row % 32;
+            accum ^= (elements[column * wordsPerColumn + rowWord] & (1 << rowBit)) == 0 ? 0 : 1;
+        }
+        return accum;
     }
 };
 
@@ -278,17 +310,28 @@ int main(int argc, char ** argv) {
 
     cout << "Num nonzero elements in A " << A.getNumElements() << "\n";
 
-    int numMultiplies = 10;
+    int numMultiplies = 19940;
     timespec t1, t2;
     uint64_t power = 1;
     cout << "The matrix gets denser as more multiplications are done, hence the slowdown\n";
+    DenseF2Matrix matrixAccum = denseMatrix;
+    ofstream traceOfs("traces");
+    uint32_t trace = denseMatrix.trace();
+    if(trace) {
+        traceOfs << "1 " << denseMatrix.trace() << "\n";
+    }
     for(int i = 0; i < numMultiplies; ++i) {
         clock_gettime(CLOCK_REALTIME, &t1);
-        denseMatrix = denseMatrix.square();
-        power = power + power;
+        matrixAccum = denseMatrix.multiply(matrixAccum);
         clock_gettime(CLOCK_REALTIME, &t2);
         double time = (t2.tv_sec * 1E9 + t2.tv_nsec - t1.tv_sec * 1E9 - t1.tv_nsec)/1E9;
-        cout << "time for multiply " << i + 1 << ": " << time << " seconds\n";
+        cout << "time for multiply " << i + 1 << ": " << time << " seconds.\n";
+        trace = matrixAccum.trace();
+        if(trace) {
+            traceOfs << i + 2 << " " << matrixAccum.trace() << "\n";
+            traceOfs.flush();
+        }
+
     }
     cout << "power: " << power << "\n";
     cout << "iterate: " << power*(n-m) << "\n";
