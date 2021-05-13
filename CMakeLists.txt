@@ -105,6 +105,9 @@ endif()
 
 set(MERSENNE_SRC
         src/montecarlo/mersenne/MersenneTwister.h
+        src/montecarlo/mersenne/DenseF2Matrix.h
+        src/montecarlo/mersenne/SparseMatrix.h
+        src/montecarlo/mersenne/MatrixElement.h
         )
 add_executable(testMersenneTwister src/montecarlo/mersenne/TestMersenneTwister.cpp ${MERSENNE_SRC})
 
