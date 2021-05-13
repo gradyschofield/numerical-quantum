@@ -112,3 +112,5 @@ set(MERSENNE_SRC
 add_executable(testMersenneTwister src/montecarlo/mersenne/TestMersenneTwister.cpp ${MERSENNE_SRC})
 
 add_executable(testJumpAhead src/montecarlo/mersenne/TestJumpAhead.cpp ${MERSENNE_SRC})
+
+add_executable(testCharacteristicPoly src/montecarlo/mersenne/TestCharacteristicPoly.cpp ${MERSENNE_SRC})

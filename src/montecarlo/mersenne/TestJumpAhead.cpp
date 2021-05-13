@@ -99,7 +99,7 @@ int main(int argc, char ** argv) {
     vector<uint32_t> state = mt19937.getState();
 
     vector<uint32_t> product = denseMatrix.multiply(state);
-    int numIterationsChecked = 1000;
+    int numIterationsChecked = 10;
     int k = 0;
     for(int j = 0; j < numIterationsChecked; ++j) {
         for (int i = 0; i < (n - m); ++i) {

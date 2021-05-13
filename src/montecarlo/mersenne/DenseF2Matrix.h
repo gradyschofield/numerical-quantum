@@ -6,6 +6,8 @@
 #define ATOM_DENSEF2MATRIX_H
 
 #include<vector>
+#include<thread>
+#include<unordered_set>
 
 using namespace std;
 
@@ -122,9 +124,57 @@ public:
         return accum;
     }
 
+    static vector<uint32_t> polyProduct(bool plusOne, vector<uint32_t> polynomial) {
+        uint32_t carry = polynomial[0] & 0x80000000;
+        polynomial[0] = polynomial[0] << 1 | (plusOne ? polynomial[0] : 0);
+        for(int i = 1; i < polynomial.size(); ++i) {
+            uint32_t nextCarry = polynomial[i] & 0x80000000;
+            polynomial[i] = polynomial[i] << 1 | (plusOne ? polynomial[i] : 0);
+            if(carry) {
+                polynomial[i] |= 0x1;
+            }
+            carry = nextCarry;
+        }
+        return polynomial;
+    }
+
+    static void polySum(vector<uint32_t> & totalPoly, vector<uint32_t> const & polynomial) {
+        for(int i = 0; i < polynomial.size(); ++i) {
+            totalPoly[i] ^= polynomial[i];
+        }
+    }
+
+    vector<uint32_t> characteristicPolynomialRecurse(uint32_t & sums, int row, unordered_set<int> & skipRows, vector<uint32_t> prefactor) const {
+        static uint32_t lastSum = 0;
+        vector<uint32_t> totalPoly(wordsPerColumn);
+        if(sums > 0 && sums != lastSum) {
+            cout << "Sums: " << sums << "\n";
+            lastSum = sums;
+        }
+        for(int column = 0; column < dim; ++column) {
+            if(!skipRows.contains(column) &&
+               ( getElement(row, column) == 1 || row == column)) {
+                skipRows.insert(column);
+                if(row == column) {
+                    bool plusOne = 1 == getElement(row, column);
+                    polySum(totalPoly, characteristicPolynomialRecurse(sums, row + 1, skipRows, polyProduct(plusOne, prefactor)));
+                    sums += 1;
+                } else {
+                    polySum(totalPoly, characteristicPolynomialRecurse(sums, row + 1, skipRows, prefactor));
+                    sums += 1;
+                }
+                skipRows.erase(column);
+            }
+        }
+        return totalPoly;
+    }
+
     vector<uint32_t> characteristicPolynomial() const {
-        vector<uint32_t> ret;
-        return ret;
+        vector<uint32_t> prefactor(wordsPerColumn);
+        prefactor[0] = 1;
+        unordered_set<int> skipRows;
+        uint32_t sums = 0;
+        return characteristicPolynomialRecurse(sums, 0, skipRows, prefactor);
     }
 };
 
