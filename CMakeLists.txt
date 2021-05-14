@@ -16,6 +16,7 @@ include_directories(
         src/stdeig
         src/montecarlo
         src/montecarlo/mersenne
+        src/montecarlo/mrg32k3a
         )
 
 set(PHYSICS_SRC
@@ -96,7 +97,7 @@ if( UNIX AND NOT APPLE)
                 src/montecarlo/cuda/cudalib/CudaContext.cpp
                 src/montecarlo/cuda/cudalib/CudaContext.h src/montecarlo/cuda/FirstIntegralCuda.cpp)
 
-        add_executable(basicCudaTest src/montecarlo/cuda/BasicCudaTest.cpp ${CUDA_SRC} src/montecarlo/mersenne/TestMersenneTwister.cpp)
+        add_executable(basicCudaTest src/montecarlo/cuda/BasicCudaTest.cpp ${CUDA_SRC} src/montecarlo/mersenne/TestMersenneTwister.cpp src/montecarlo/mrg32k3a/TestMrg32k3a.cpp)
         target_link_libraries(basicCudaTest pthread cuda)
 
         add_executable(firstIntegralCuda src/montecarlo/cuda/FirstIntegralCuda.cpp ${CUDA_SRC})
@@ -114,3 +115,10 @@ add_executable(testMersenneTwister src/montecarlo/mersenne/TestMersenneTwister.c
 add_executable(testJumpAhead src/montecarlo/mersenne/TestJumpAhead.cpp ${MERSENNE_SRC})
 
 add_executable(testCharacteristicPoly src/montecarlo/mersenne/TestCharacteristicPoly.cpp ${MERSENNE_SRC})
+
+set(MRG32K3A_SRC
+        src/montecarlo/mrg32k3a/Matrix3x3.h
+        src/montecarlo/mrg32k3a/Mrg32k3a.h
+        )
+
+add_executable(testMrg32k3a src/montecarlo/mrg32k3a/TestMrg32k3a.cpp ${MRG32K3A_SRC})
