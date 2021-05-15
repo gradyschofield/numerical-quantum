@@ -52,13 +52,20 @@ public:
     vector<int64_t> multiply(vector<int64_t> const & v, int64_t modulus) {
         vector<int64_t> ret(3);
         for(int row = 0; row < 3; ++row) {
+            int64_t dot = 0;
             for(int column = 0; column < 3; ++column) {
-                ret[row] += getElement(row, column) * v[column];
+                int64_t t = getElement(row, column) * v[column];
+                t %= modulus;
+                if(t < 0) {
+                    t += modulus;
+                }
+                dot += t;
             }
-            ret[row] %= modulus;
-            if(ret[row] < 0) {
-                ret[row] += modulus;
+            dot %= modulus;
+            if(dot < 0) {
+                dot += modulus;
             }
+            ret[row] = dot;
         }
         return ret;
     }

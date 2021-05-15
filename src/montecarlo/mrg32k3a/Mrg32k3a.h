@@ -30,6 +30,15 @@ public:
         }
     }
 
+    void initState(vector<int64_t> const & state, int subsequence) {
+        for(int i = 0; i < 3; ++i) {
+            xstate[i] = state[subsequence*6+i];
+        }
+        for(int i = 0; i < 3; ++i) {
+            ystate[i] = state[subsequence*6+i+3];
+        }
+    }
+
     vector<int64_t> getXState() const {
         return xstate;
     }
@@ -117,6 +126,7 @@ public:
         clock_gettime(CLOCK_REALTIME, & t2);
         double time = (t2.tv_sec * 1E9 + t2.tv_nsec - t1.tv_sec * 1E9 - t1.tv_nsec) / 1E9;
         cout << "Time to skip 2^" << N << " for " << numThreads << " threads " << time << "\n";
+        return state;
     }
 };
 
