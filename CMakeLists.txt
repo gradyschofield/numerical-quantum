@@ -122,3 +122,6 @@ set(MRG32K3A_SRC
         )
 
 add_executable(testMrg32k3a src/montecarlo/mrg32k3a/TestMrg32k3a.cpp ${MRG32K3A_SRC})
+if( UNIX AND NOT APPLE)
+        target_link_libraries(testMrg32k3a pthread)
+endif()
